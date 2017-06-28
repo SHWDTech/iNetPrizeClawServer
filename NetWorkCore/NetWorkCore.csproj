@@ -40,6 +40,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IpcObjects\CommandDispatcher.cs" />
+    <Compile Include="IpcObjects\ControlCommand.cs" />
     <Compile Include="TcpSocketClient.cs" />
     <Compile Include="TcpSocketListener.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
