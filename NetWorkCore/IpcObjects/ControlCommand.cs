@@ -25,6 +25,11 @@
         /// <summary>
         /// 机械臂抓取
         /// </summary>
-        Catch = 0x04
+        Catch = 0x04,
+
+        /// <summary>
+        /// 机械臂停止
+        /// </summary>
+        Stop = 0x05
     }
 }

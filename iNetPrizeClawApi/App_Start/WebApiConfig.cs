@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Net.Http.Headers;
 using System.Web.Http;
 
 namespace iNetPrizeClawApi
@@ -19,6 +17,10 @@ namespace iNetPrizeClawApi
                 routeTemplate: "api/{controller}/{id}",
                 defaults: new { id = RouteParameter.Optional }
             );
+
+            // return json
+            config.Formatters.JsonFormatter.SupportedMediaTypes
+                .Add(new MediaTypeHeaderValue("text/html"));
         }
     }
 }

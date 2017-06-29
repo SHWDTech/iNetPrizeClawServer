@@ -47,6 +47,7 @@ namespace NetWorkCore
                 _listenSocekt = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 _listenSocekt.Bind(endPoint);
                 _listenSocekt.Listen(4096);
+                StartAccept(null);
             }
             catch (Exception ex)
             {

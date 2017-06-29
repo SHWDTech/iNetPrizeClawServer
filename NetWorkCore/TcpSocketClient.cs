@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Net.Sockets;
+using System.Text;
 
 namespace NetWorkCore
 {
@@ -29,8 +30,6 @@ namespace NetWorkCore
 
     public class TcpSocketClient
     {
-
-
         private readonly Socket _clientSocket;
 
         private readonly SocketAsyncEventArgs _asyncEventArgs;
@@ -40,6 +39,8 @@ namespace NetWorkCore
         public event Disconnected Disconnected;
 
         private bool _isDisposed;
+
+        public string ClientCode { get; private set; }
 
         public TcpSocketClient(Socket client)
         {
@@ -92,6 +93,19 @@ namespace NetWorkCore
                         BytesTransferred = _asyncEventArgs.BytesTransferred,
                         Buffer = _asyncEventArgs.Buffer
                     });
+                    var protocolContent = Encoding.ASCII.GetString(_asyncEventArgs.Buffer, 0, _asyncEventArgs.BytesTransferred);
+                    if (protocolContent.Contains("ClientCode"))
+                    {
+                        try
+                        {
+                            ClientCode = protocolContent.Split(':')[1];
+                            Send(Encoding.ASCII.GetBytes("OK"));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(ex);
+                        }
+                    }
                     var willRaiseEvent = _clientSocket.ReceiveAsync(_asyncEventArgs); //投递接收请求
                     if (willRaiseEvent) return;
                     ProcessReceive();
