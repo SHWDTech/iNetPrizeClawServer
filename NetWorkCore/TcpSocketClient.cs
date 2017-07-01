@@ -54,7 +54,7 @@ namespace NetWorkCore
         public TcpSocketClient(Socket client)
         {
             _clientSocket = client;
-            _machineStatus = new MachineStutas();
+            _machineStatus = new MachineStutas(this);
             _asyncEventArgs = new SocketAsyncEventArgs();
             _asyncEventArgs.SetBuffer(new byte[4096], 0, 4096);
             _asyncEventArgs.Completed += (sender, args) =>

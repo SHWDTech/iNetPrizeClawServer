@@ -1,12 +1,22 @@
-﻿using NetWorkCore.IpcObjects;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using NetWorkCore.IpcObjects;
 
 namespace NetWorkCore
 {
     public class MachineStutas
     {
+        public MachineStutas(TcpSocketClient client)
+        {
+            _tcpSocketClient = client;
+        }
+
         public string ClientCode { get; set; }
 
         public bool IsCoinReady { get; private set; }
+
+        private readonly TcpSocketClient _tcpSocketClient;
 
         public void CoinReady()
         {
@@ -16,6 +26,11 @@ namespace NetWorkCore
         public void GameStart()
         {
             IsCoinReady = false;
+            Task.Factory.StartNew(() =>
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(15));
+                _tcpSocketClient.SendCommand(ControlCommand.Catch);
+            });
         }
 
         public MachineOperateResult ExecuteOperate(MachineOperate operate)
@@ -35,7 +50,7 @@ namespace NetWorkCore
                     break;
             }
 
-            result.IsOperateResultOk = true;
+            result.IsOperateSuccess = true;
             return result;
         }
     }
