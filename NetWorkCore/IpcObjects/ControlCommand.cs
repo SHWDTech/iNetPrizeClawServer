@@ -30,6 +30,16 @@
         /// <summary>
         /// 机械臂停止
         /// </summary>
-        Stop = 0x05
+        Stop = 0x05,
+
+        /// <summary>
+        /// 机器投币
+        /// </summary>
+        CoinIn = 0x06,
+
+        /// <summary>
+        /// 投币完成
+        /// </summary>
+        CoinGet = 0x07
     }
 }

@@ -7,10 +7,19 @@ namespace iNetPrizeClawApi.Controllers
 {
     public class CommandController : ApiController
     {
-        public void Post([FromBody]MachineClientCommand model)
+        public string Post([FromBody]MachineClientCommand model)
         {
-            var dispatcher = (CommandDispatcher)Activator.GetObject(typeof(CommandDispatcher), "ipc://PrizeClawControlChannel/CommandDispatcher");
-            dispatcher.SendCommand(model.ClientCode, model.Command);
+            try
+            {
+                var dispatcher = (CommandDispatcher) Activator.GetObject(typeof(CommandDispatcher),
+                    "ipc://PrizeClawControlChannel/CommandDispatcher");
+                dispatcher.SendCommand(model.ClientCode, model.Command);
+                return "OK";
+            }
+            catch (Exception ex)
+            {
+                return ex.ToString();
+            }
         }
     }
 }

@@ -2,6 +2,9 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using NetWorkCore.IpcObjects;
 
 namespace NetWorkCore
 {
@@ -25,6 +28,8 @@ namespace NetWorkCore
 
     public class SocketClientDisconnectedArgs : SocketClientEventArgs
     {
+        public TcpSocketClient DisconnectedClient { get; set; }
+
         public string DisconnectedSocketRemoteEndPoint { get; set; }
     }
 
@@ -38,13 +43,18 @@ namespace NetWorkCore
 
         public event Disconnected Disconnected;
 
+        public bool IsAvaliable { get; private set; } = true;
+
         private bool _isDisposed;
 
-        public string ClientCode { get; private set; }
+        public string ClientCode => _machineStatus.ClientCode;
+
+        private readonly MachineStutas _machineStatus;
 
         public TcpSocketClient(Socket client)
         {
             _clientSocket = client;
+            _machineStatus = new MachineStutas();
             _asyncEventArgs = new SocketAsyncEventArgs();
             _asyncEventArgs.SetBuffer(new byte[4096], 0, 4096);
             _asyncEventArgs.Completed += (sender, args) =>
@@ -52,6 +62,7 @@ namespace NetWorkCore
                 ProcessReceive();
             };
             var willRaiseEvent = _clientSocket.ReceiveAsync(_asyncEventArgs); //投递接收请求
+            Authentication();
             if (willRaiseEvent) return;
             lock (_clientSocket)
             {
@@ -59,19 +70,56 @@ namespace NetWorkCore
             }
         }
 
-        public void Send(byte[] sendBytes)
+        private void Authentication()
         {
+            Task.Factory.StartNew(() =>
+            {
+                if (string.IsNullOrWhiteSpace(ClientCode))
+                {
+                    Send("WhoAreYou\r\n");
+                    Thread.Sleep(500);
+                    Authentication();
+                }
+            });
+        }
+
+        public void SendCommand(ControlCommand command)
+        {
+            Send(ParseCommand(command));
+        }
+
+        public void Send(string contentStr)
+        {
+            var sendBytes = Encoding.UTF8.GetBytes(contentStr);
             try
             {
                 _clientSocket.Send(sendBytes);
+                Console.WriteLine($"send content:{Encoding.UTF8.GetString(sendBytes)}, send datetime: {DateTime.Now:yyyy-MM-dd HH:mm:ss fff}");
+                if (contentStr.Contains("CoinIn"))
+                {
+                    
+                }
             }
             catch (Exception)
             {
                 ClientDisconnected(new SocketClientDisconnectedArgs
                 {
+                    DisconnectedClient = this,
                     DisconnectedSocketRemoteEndPoint = _clientSocket.RemoteEndPoint.ToString()
                 });
             }
+        }
+
+        public MachineOperateResult ExecuteOperate(MachineOperate operate) => _machineStatus.ExecuteOperate(operate);
+
+        private static string ParseCommand(ControlCommand command)
+        {
+            return $"{command}\r\n";
+        }
+
+        public bool IsCoinReady()
+        {
+            return _machineStatus.IsCoinReady;
         }
 
         private void ProcessReceive()
@@ -83,6 +131,7 @@ namespace NetWorkCore
                 {
                     ClientDisconnected(new SocketClientDisconnectedArgs
                     {
+                        DisconnectedClient = this,
                         DisconnectedSocketRemoteEndPoint = _clientSocket.RemoteEndPoint.ToString()
                     });
                 }
@@ -98,13 +147,18 @@ namespace NetWorkCore
                     {
                         try
                         {
-                            ClientCode = protocolContent.Split(':')[1];
-                            Send(Encoding.ASCII.GetBytes("OK"));
+                            _machineStatus.ClientCode = protocolContent.Split(':')[1];
+                            Send("OK\r\n");
+                            Console.WriteLine($"client authenticated, clientCode:{ClientCode}");
                         }
                         catch (Exception ex)
                         {
                             Debug.WriteLine(ex);
                         }
+                    }
+                    if (protocolContent.Contains("CoinGet"))
+                    {
+                        _machineStatus.CoinReady();
                     }
                     var willRaiseEvent = _clientSocket.ReceiveAsync(_asyncEventArgs); //投递接收请求
                     if (willRaiseEvent) return;
@@ -116,6 +170,7 @@ namespace NetWorkCore
                 Debug.WriteLine(ex);
                 ClientDisconnected(new SocketClientDisconnectedArgs
                 {
+                    DisconnectedClient = this,
                     DisconnectedSocketRemoteEndPoint = _clientSocket.RemoteEndPoint.ToString()
                 });
             }
@@ -136,6 +191,7 @@ namespace NetWorkCore
         public void Dispoose()
         {
             if (_isDisposed) return;
+            IsAvaliable = false;
             _isDisposed = true;
             _clientSocket.Dispose();
         }

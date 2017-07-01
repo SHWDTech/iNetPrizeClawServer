@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace NetWorkCore
 {
@@ -110,6 +111,7 @@ namespace NetWorkCore
                 {
                     AcceptClient = client
                 });
+                Console.WriteLine($"socket accepted, remote address:{acceptEventArgs.AcceptSocket.RemoteEndPoint}");
             }
             catch (Exception ex)
             {
@@ -121,6 +123,14 @@ namespace NetWorkCore
 
         private void OnClientDisconnected(SocketClientDisconnectedArgs args)
         {
+            Console.WriteLine($"Client Disconnected, clientRemoteEndPoint : {args.DisconnectedSocketRemoteEndPoint}");
+            lock (ConnectedClients)
+            {
+                if (ConnectedClients.Contains(args.DisconnectedClient))
+                {
+                    ConnectedClients.Remove(args.DisconnectedClient);
+                }
+            }
             ClientDisconnected?.Invoke(args);
         }
     }
