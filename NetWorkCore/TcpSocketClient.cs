@@ -85,6 +85,10 @@ namespace NetWorkCore
 
         public void SendCommand(ControlCommand command)
         {
+            if (command == ControlCommand.Catch)
+            {
+                _machineStatus.GameOver();
+            }
             Send(ParseCommand(command));
         }
 

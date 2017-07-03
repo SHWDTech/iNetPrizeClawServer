@@ -20,9 +20,12 @@ namespace NetWorkCore
 
         public bool IsCatchSuccess { get; private set; }
 
+        public bool IsGameOver { get; private set; }
+
         public void CoinReady()
         {
             IsCoinReady = true;
+            IsGameOver = false;
         }
 
         public void GameStart()
@@ -31,8 +34,14 @@ namespace NetWorkCore
             Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(TimeSpan.FromSeconds(30));
+                if (IsGameOver) return;
                 _tcpSocketClient.SendCommand(ControlCommand.Catch);
             });
+        }
+
+        public void GameOver()
+        {
+            IsGameOver = true;
         }
 
         public MachineOperateResult ExecuteOperate(MachineOperate operate)
