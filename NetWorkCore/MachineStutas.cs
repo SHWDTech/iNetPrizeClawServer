@@ -18,6 +18,8 @@ namespace NetWorkCore
 
         private readonly TcpSocketClient _tcpSocketClient;
 
+        public bool IsCatchSuccess { get; private set; }
+
         public void CoinReady()
         {
             IsCoinReady = true;
@@ -25,7 +27,7 @@ namespace NetWorkCore
 
         public void GameStart()
         {
-            IsCoinReady = false;
+            IsCoinReady  = IsCatchSuccess = false;
             Task.Factory.StartNew(() =>
             {
                 Thread.Sleep(TimeSpan.FromSeconds(15));
@@ -48,10 +50,18 @@ namespace NetWorkCore
                 case MachineOperate.GetCoinStatus:
                     result.IsOperateResultOk = IsCoinReady;
                     break;
+                case MachineOperate.GetCatchCount:
+                    result.IsOperateResultOk = IsCatchSuccess;
+                    break;
             }
 
             result.IsOperateSuccess = true;
             return result;
+        }
+
+        public void CatchSuccessed()
+        {
+            IsCatchSuccess = true;
         }
     }
 }

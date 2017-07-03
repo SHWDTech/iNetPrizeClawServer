@@ -143,6 +143,7 @@ namespace NetWorkCore
                         Buffer = _asyncEventArgs.Buffer
                     });
                     var protocolContent = Encoding.ASCII.GetString(_asyncEventArgs.Buffer, 0, _asyncEventArgs.BytesTransferred);
+                    Console.WriteLine($"get data, dataContent:{protocolContent}, gettime:{DateTime.Now:yyyy-MM-dd HH:mm:ss fff}");
                     if (protocolContent.Contains("ClientCode"))
                     {
                         try
@@ -159,6 +160,10 @@ namespace NetWorkCore
                     if (protocolContent.Contains("CoinGet"))
                     {
                         _machineStatus.CoinReady();
+                    }
+                    if (protocolContent.Contains("CatchSuccess"))
+                    {
+                        _machineStatus.CatchSuccessed();
                     }
                     var willRaiseEvent = _clientSocket.ReceiveAsync(_asyncEventArgs); //投递接收请求
                     if (willRaiseEvent) return;

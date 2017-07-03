@@ -10,6 +10,11 @@
         /// <summary>
         /// 游戏开始
         /// </summary>
-        GameStart = 0x01
+        GameStart = 0x01,
+
+        /// <summary>
+        /// 获取抓取成功总数
+        /// </summary>
+        GetCatchCount = 0x02
     }
 }
