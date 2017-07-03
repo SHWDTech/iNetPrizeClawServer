@@ -22,8 +22,18 @@ namespace NetWorkCore.IpcObjects
 
         public MachineOperateResult MachineOperate(string clientCode, MachineOperate operate)
         {
-            return ServerListener.ConnectedClients.FirstOrDefault(c => c.ClientCode == clientCode)
-                ?.ExecuteOperate(operate);
+            var client = ServerListener.ConnectedClients.FirstOrDefault(c => c.ClientCode == clientCode);
+            if (client == null)
+            {
+                return new MachineOperateResult
+                {
+                    ClientCode = "UnKnow",
+                    IsOperateResultOk = false,
+                    IsOperateSuccess = false,
+                    OperateMessage = "设备未连接"
+                };
+            }
+            return client.ExecuteOperate(operate);
         }
 
         private static bool IsCommandCanSend(string clientCode, ControlCommand command, out ClientCommandStutas status)
