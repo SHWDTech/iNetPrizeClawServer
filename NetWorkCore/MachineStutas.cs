@@ -30,7 +30,7 @@ namespace NetWorkCore
             IsCoinReady  = IsCatchSuccess = false;
             Task.Factory.StartNew(() =>
             {
-                Thread.Sleep(TimeSpan.FromSeconds(15));
+                Thread.Sleep(TimeSpan.FromSeconds(30));
                 _tcpSocketClient.SendCommand(ControlCommand.Catch);
             });
         }
